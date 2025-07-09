@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Forecast Energy Load</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="nav-container">
+      <span class="logo">Energy Forecast App</span>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('upload') }}">Upload Dataset</a></li>
+        <li><a href="{{ url_for('train') }}">Train New Model</a></li>
+        <li><a href="{{ url_for('metrics') }}">Evaluation Metrics</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Forecast Energy Load</h1>
+
+    <form method="POST">
+      <div class="form-group">
+        <label for="steps"><strong>Forecast Steps:</strong></label>
+        <input type="number" id="steps" name="steps" min="1" max="100" required>
+      </div>
+
+      <div class="form-group">
+        <p><strong>Choose Input Method:</strong></p>
+        <label><input type="radio" name="input_type" value="latest" checked> Use Latest Dataset Row</label><br>
+        <label><input type="radio" name="input_type" value="manual"> Enter Inputs Manually</label>
+      </div>
+
+      <div id="manual-inputs" style="display:none;">
+        <div class="form-group"><label>P_IN (kW):</label><input type="number" step="any" name="P_IN" required></div>
+        <div class="form-group"><label>T_IN (°C):</label><input type="number" step="any" name="T_IN" required></div>
+        <div class="form-group"><label>P_OUT (kW):</label><input type="number" step="any" name="P_OUT" required></div>
+        <div class="form-group"><label>T_OUT (°C):</label><input type="number" step="any" name="T_OUT" required></div>
+        <div class="form-group"><label>LOAD (kW):</label><input type="number" step="any" name="LOAD" required></div>
+      </div>
+
+      <button type="submit">Forecast</button>
+    </form>
+
+    <div class="info-block">
+  <h3>Latest Input Features</h3>
+  {% if latest_inputs %}
+    <ul>
+      <li><strong>P_IN:</strong> {{ latest_inputs["P_IN"] }} kW</li>
+      <li><strong>T_IN:</strong> {{ latest_inputs["T_IN"] }} °C</li>
+      <li><strong>P_OUT:</strong> {{ latest_inputs["P_OUT"] }} kW</li>
+      <li><strong>T_OUT:</strong> {{ latest_inputs["T_OUT"] }} °C</li>
+      <li><strong>LOAD:</strong> {{ latest_inputs["LOAD"] }} kW</li>
+    </ul>
+  {% else %}
+    <p>No latest input data found.</p>
+  {% endif %}
+</div>
+
+  <script>
+    const manualRadio = document.querySelector('input[value="manual"]');
+    const latestRadio = document.querySelector('input[value="latest"]');
+    const manualInputs = document.getElementById('manual-inputs');
+
+    function toggleManualInputs() {
+      manualInputs.style.display = manualRadio.checked ? 'block' : 'none';
+    }
+
+    manualRadio.addEventListener('change', toggleManualInputs);
+    latestRadio.addEventListener('change', toggleManualInputs);
+
+    window.onload = toggleManualInputs;
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Training Results</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>Model Training Completed</h1>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Root Mean Squared Error (RMSE)</td>
+          <td>{{ '%.4f' | format(rmse) }}</td>
+        </tr>
+        <tr>
+          <td>Mean Absolute Error (MAE)</td>
+          <td>{{ '%.4f' | format(mae) }}</td>
+        </tr>
+        <tr>
+          <td>Mean Absolute Percentage Error (MAPE)</td>
+          <td>{{ '%.2f' | format(mape) }}%</td>
+        </tr>
+        <tr>
+          <td>Symmetric MAPE (SMAPE)</td>
+          <td>{{ '%.2f' | format(smape) }}%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="back-button" style="margin-top: 30px;">
+      <a href="{{ url_for('index') }}" style="color: #007bff;">← Back to Forecasting</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Model Evaluation Metrics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Model Evaluation</h1>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Root Mean Squared Error (RMSE)</td>
+                    <td>{{ '%.4f'|format(rmse) }}</td>
+                </tr>
+                <tr>
+                    <td>Mean Absolute Error (MAE)</td>
+                    <td>{{ '%.4f'|format(mae) }}</td>
+                </tr>
+                <tr>
+                    <td>Mean Absolute Percentage Error (MAPE)</td>
+                    <td>{{ '%.2f'|format(mape) }}%</td>
+                </tr>
+                <tr>
+                    <td>Symmetric MAPE (SMAPE)</td>
+                    <td>{{ '%.2f'|format(smape) }}%</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="chart-container" style="margin-top: 40px;">
+            <h2 style="text-align:center;">Actual vs Predicted Load</h2>
+            <canvas id="lineChart" height="150"></canvas>
+        </div>
+
+        <div class="back-button" style="margin-top: 30px;">
+            <a href="{{ url_for('index') }}" style="color: #007bff;">← Back to Forecast</a>
+        </div>
+    </div>
+
+    <script>
+        const yTest = {{ y_test | tojson }};
+        const yPred = {{ y_pred | tojson }};
+        const steps = Array.from({ length: yTest.length }, (_, i) => i + 1);
+
+        const ctx = document.getElementById('lineChart').getContext('2d');
+        const lineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: steps,
+                datasets: [
+                    {
+                        label: 'Actual Load',
+                        data: yTest,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderWidth: 2,
+                        fill: false
+                    },
+                    {
+                        label: 'Predicted Load',
+                        data: yPred,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderWidth: 2,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Time Step'
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Load Value (kW)'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

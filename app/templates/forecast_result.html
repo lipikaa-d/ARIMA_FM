@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Forecast Result</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="nav-container">
+      <span class="logo">Energy Forecast App</span>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('upload') }}">Upload Dataset</a></li>
+        <li><a href="{{ url_for('train') }}">Train New Model</a></li>
+        <li><a href="{{ url_for('metrics') }}">Evaluation Metrics</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Forecast Result</h1>
+
+    <div class="info-block">
+      <p><strong>Forecast Horizon:</strong> {{ steps }} step(s)</p>
+      <p><strong>Input Source:</strong> {{ 'Manual Entry' if manual_used else 'Latest Dataset Row' }}</p>
+    </div>
+
+    <div class="info-block">
+      <h3>Input Values Used for Forecasting</h3>
+      {% if latest_inputs %}
+        <ul>
+          {% if latest_inputs.get('P_IN') is defined %}
+          <li><strong>P_IN:</strong> {{ latest_inputs["P_IN"] }} kW</li>
+          <li><strong>T_IN:</strong> {{ latest_inputs["T_IN"] }} °C</li>
+          <li><strong>P_OUT:</strong> {{ latest_inputs["P_OUT"] }} kW</li>
+          <li><strong>T_OUT:</strong> {{ latest_inputs["T_OUT"] }} °C</li>
+          <li><strong>LOAD:</strong> {{ latest_inputs["LOAD"] }} kW</li>
+          {% else %}
+          <li>No structured input values provided.</li>
+          {% endif %}
+        </ul>
+      {% else %}
+        <p>No input data available.</p>
+      {% endif %}
+    </div>
+
+    <div class="table-container" style="margin-top: 30px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Step</th>
+            <th>Predicted Load (kW)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in range(1, steps + 1) %}
+          <tr>
+            <td>{{ i }}</td>
+            <td>{{ '%.2f'|format(forecast_values[i-1]) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="back-button" style="margin-top: 20px;">
+      <a href="{{ url_for('index') }}" style="color: #007bff;">← Go back</a>
+    </div>
+  </div>
+
+</body>
+</html>
