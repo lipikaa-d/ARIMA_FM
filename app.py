@@ -153,6 +153,9 @@ def train():
     except Exception as e:
         return f"<h3>Error training model: {e}</h3><br><a href='/'>Go back</a>"
 
-
+"""
 if __name__ == '__main__':
     app.run(debug=True)
+"""
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
