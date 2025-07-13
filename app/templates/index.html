@@ -17,7 +17,6 @@
       </ul>
     </div>
   </div>
-
   <div class="container">
     <h1>Forecast Energy Load</h1>
 
@@ -34,11 +33,10 @@
       </div>
 
       <div id="manual-inputs" style="display:none;">
-        <div class="form-group"><label>P_IN (kW):</label><input type="number" step="any" name="P_IN" required></div>
-        <div class="form-group"><label>T_IN (°C):</label><input type="number" step="any" name="T_IN" required></div>
-        <div class="form-group"><label>P_OUT (kW):</label><input type="number" step="any" name="P_OUT" required></div>
-        <div class="form-group"><label>T_OUT (°C):</label><input type="number" step="any" name="T_OUT" required></div>
-        <div class="form-group"><label>LOAD (kW):</label><input type="number" step="any" name="LOAD" required></div>
+        <div class="form-group"><label>P_IN (kW):</label><input type="number" step="any" name="P_IN"></div>
+        <div class="form-group"><label>T_IN (°C):</label><input type="number" step="any" name="T_IN"></div>
+        <div class="form-group"><label>P_OUT (kW):</label><input type="number" step="any" name="P_OUT"></div>
+        <div class="form-group"><label>T_OUT (°C):</label><input type="number" step="any" name="T_OUT"></div>
       </div>
 
       <button type="submit">Forecast</button>
@@ -47,16 +45,16 @@
     <div class="info-block">
   <h3>Latest Input Features</h3>
   {% if latest_inputs %}
-    <ul>
-      <li><strong>P_IN:</strong> {{ latest_inputs["P_IN"] }} kW</li>
-      <li><strong>T_IN:</strong> {{ latest_inputs["T_IN"] }} °C</li>
-      <li><strong>P_OUT:</strong> {{ latest_inputs["P_OUT"] }} kW</li>
-      <li><strong>T_OUT:</strong> {{ latest_inputs["T_OUT"] }} °C</li>
-      <li><strong>LOAD:</strong> {{ latest_inputs["LOAD"] }} kW</li>
-    </ul>
-  {% else %}
-    <p>No latest input data found.</p>
-  {% endif %}
+  <ul>
+    <li><strong>P_IN:</strong> {{ latest_inputs["P_IN"] }} KW</li>
+    <li><strong>T_IN:</strong> {{ latest_inputs["T_IN"] }} °C</li>
+    <li><strong>P_OUT:</strong> {{ latest_inputs["P_OUT"] }} KW</li>
+    <li><strong>T_OUT:</strong> {{ latest_inputs["T_OUT"] }} °C</li>
+  </ul>
+{% else %}
+  <p>No latest input data found.</p>
+{% endif %}
+
 </div>
 
   <script>

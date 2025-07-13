@@ -37,9 +37,10 @@
             </tbody>
         </table>
 
-        <div class="chart-container" style="margin-top: 40px;">
-            <h2 style="text-align:center;">Actual vs Predicted Load</h2>
-            <canvas id="lineChart" height="150"></canvas>
+
+        <div class="chart-container" style="margin-top: 60px;">
+            <h2 style="text-align:center;">Time vs Load</h2>
+            <img src="{{ url_for('load_plot') }}" alt="Time vs Load Plot" style="width:100%; max-width:900px;">
         </div>
 
         <div class="back-button" style="margin-top: 30px;">
@@ -47,55 +48,3 @@
         </div>
     </div>
 
-    <script>
-        const yTest = {{ y_test | tojson }};
-        const yPred = {{ y_pred | tojson }};
-        const steps = Array.from({ length: yTest.length }, (_, i) => i + 1);
-
-        const ctx = document.getElementById('lineChart').getContext('2d');
-        const lineChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: steps,
-                datasets: [
-                    {
-                        label: 'Actual Load',
-                        data: yTest,
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderWidth: 2,
-                        fill: false
-                    },
-                    {
-                        label: 'Predicted Load',
-                        data: yPred,
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        borderWidth: 2,
-                        fill: false
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        display: true,
-                        title: {
-                            display: true,
-                            text: 'Time Step'
-                        }
-                    },
-                    y: {
-                        display: true,
-                        title: {
-                            display: true,
-                            text: 'Load Value (kW)'
-                        }
-                    }
-                }
-            }
-        });
-    </script>
-</body>
-</html>

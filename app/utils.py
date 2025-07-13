@@ -1,69 +1,115 @@
-import pandas as pd
+import os
 import joblib
+import pandas as pd
 from src.data_preprocessing import load_and_clean_data
 
-MODEL_PATH = 'model.pkl'
+MODEL_PATH = 'models/sarimax_model.pkl'
 DATA_PATH = 'data/combinedddddd_dataset.xlsx'
 
-def load_trained_model():
-    return joblib.load(MODEL_PATH)
 
-def get_latest_input_data():
-    from src.data_preprocessing import load_and_clean_data
-    df = load_and_clean_data("data/combinedddddd_dataset.xlsx")
-    latest_row = df.iloc[-1]
-    return {
-        'P_IN': latest_row['P_IN'],
-        'T_IN': latest_row['T_IN'],
-        'P_OUT': latest_row['P_OUT'],
-        'T_OUT': latest_row['T_OUT'],
-        'LOAD': latest_row['LOAD']
-    }
+def generate_features(df):
+    """
+    Generate lag and rolling mean features with naming that matches training phase.
+    Example: P_IN_lag1, P_IN_lag2, P_IN_roll3
+    """
+    df = df.copy()
+
+    for col in ['P_IN', 'T_IN', 'P_OUT', 'T_OUT', 'LOAD']:
+        for lag in range(1, 4):
+            df[f'{col}_lag{lag}'] = df[col].shift(lag)
+        df[f'{col}_roll3'] = df[col].shift(1).rolling(window=3).mean()
+
+    df.dropna(inplace=True)
+    df.reset_index(drop=True, inplace=True)
+    return df
+
+
+def load_trained_model():
+    if not os.path.exists(MODEL_PATH):
+        raise FileNotFoundError(f"Model not found: {MODEL_PATH}")
+    return joblib.load(MODEL_PATH)
 
 
 def forecast_next_steps(model, steps=1):
-    from src.data_preprocessing import load_and_clean_data
+    """
+    Forecast LOAD for next 'steps' using most recent data from the dataset.
+    """
+    df = load_and_clean_data(DATA_PATH)
+    df = df.sort_values("DATE")
 
-    df = load_and_clean_data("data/combinedddddd_dataset.xlsx")
-    df.set_index('DATE', inplace=True)
+    if len(df) < 13:
+        raise ValueError("At least 13 rows needed to generate lag features.")
 
-    exog_cols = ['P_IN', 'T_IN', 'P_OUT', 'T_OUT']
-    latest_exog = df[exog_cols].iloc[-1:]
+    recent_df = df.tail(13)
+    features_df = generate_features(recent_df)
+    X_latest = features_df.drop(columns=["LOAD"]).iloc[-1]
+    exog_df = pd.DataFrame([X_latest] * steps)
 
-    repeated_exog = pd.concat([latest_exog] * steps, ignore_index=True)
+    # Ensure correct column order
+    expected_exog = model.model.exog_names
 
-    forecast = model.forecast(steps=steps, exog=repeated_exog)
+    # Debug prints
+    print("exog_df columns:", exog_df.columns.tolist())
+    print("Expected columns:", expected_exog)
+
+    # Ensure all required columns exist
+    if not all(col in exog_df.columns for col in expected_exog):
+        missing = [col for col in expected_exog if col not in exog_df.columns]
+        raise ValueError(f"Missing required exogenous columns: {missing}")
+
+    # Reorder exog_df to match model's expected order
+    exog_df = exog_df[expected_exog]
+
+    forecast = model.forecast(steps=steps, exog=exog_df)
     return forecast.tolist()
 
 
-import pandas as pd
-import numpy as np
+def forecast_from_manual_input(model, manual_df, steps=1):
+    """
+    Forecast LOAD from user-provided 13-row DataFrame (manual input mode).
+    """
+    if manual_df.shape[0] < 13:
+        raise ValueError("Manual input must have at least 13 rows.")
 
-def forecast_from_manual_input(model, manual_input, steps):
-    # Extract raw input
-    p_in = manual_input['P_IN']
-    t_in = manual_input['T_IN']
-    p_out = manual_input['P_OUT']
-    t_out = manual_input['T_OUT']
+    features_df = generate_features(manual_df)
+    X_latest = features_df.drop(columns=["LOAD"]).iloc[-1]
+    exog_df = pd.DataFrame([X_latest] * steps)
 
-    # Create DataFrame for engineered features
-    exog_df = pd.DataFrame([{
-        'P_IN': p_in,
-        'T_IN': t_in,
-        'P_OUT': p_out,
-        'T_OUT': t_out,
-        'P_IN_lag1': p_in,
-        'T_IN_lag1': t_in,
-        'P_OUT_lag1': p_out,
-        'T_OUT_lag1': t_out,
-        'P_IN_roll3': p_in,
-        'T_IN_roll3': t_in,
-        'P_OUT_roll3': p_out,
-        'T_OUT_roll3': t_out
-    }])
+    # Ensure correct column order
+    expected_exog = model.model.exog_names
 
-    # Forecast
-    forecast = model.forecast(steps=steps, exog=pd.concat([exog_df]*steps, ignore_index=True))
+    # Debug logs to help identify mismatch
+    print("exog_df columns:", exog_df.columns.tolist())
+    print("Expected columns:", expected_exog)
 
+    # Check if all required columns are present
+    if not all(col in exog_df.columns for col in expected_exog):
+        missing = [col for col in expected_exog if col not in exog_df.columns]
+        raise ValueError(f"Missing required exogenous columns: {missing}")
+
+    # Reorder columns to match model
+    exog_df = exog_df[expected_exog]
+
+    forecast = model.forecast(steps=steps, exog=exog_df)
     return forecast.tolist()
 
+def get_latest_input_data():
+    df = load_and_clean_data(DATA_PATH)
+    df = df.sort_values("DATE")
+
+    if len(df) < 13:
+        raise ValueError("Not enough data to extract latest input row.")
+
+    recent_df = df.tail(13)
+    features_df = generate_features(recent_df)
+    latest_row = features_df.iloc[-1]
+
+    # Extract the original values (not lagged) for display
+    latest_values = {
+        'P_IN': round(df.iloc[-1]['P_IN'], 2),
+        'T_IN': round(df.iloc[-1]['T_IN'], 2),
+        'P_OUT': round(df.iloc[-1]['P_OUT'], 2),
+        'T_OUT': round(df.iloc[-1]['T_OUT'], 2),
+    }
+
+    return latest_values

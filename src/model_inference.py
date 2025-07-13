@@ -1,49 +1,43 @@
-import os
-import joblib
 import pandas as pd
+import joblib
+import os
+from src.utils import generate_features
 from src.data_preprocessing import load_and_clean_data
 
+MODEL_PATH = 'models/sarimax_model.pkl'
+DATA_PATH = 'data/combinedddddd_dataset.xlsx'
 
-def load_model(model_path='arima_model.pkl'):
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model file not found: {model_path}")
-    return joblib.load(model_path)
+def load_trained_model():
+    if not os.path.exists(MODEL_PATH):
+        raise FileNotFoundError(f"Model not found: {MODEL_PATH}")
+    return joblib.load(MODEL_PATH)
 
+def forecast_next_steps(model, steps=1):
+    df = load_and_clean_data(DATA_PATH)
+    df = df.sort_values("DATE")
 
-def predict_next(df, model, target_col='LOAD'):
-    # Ensure series is sorted
-    df = df.sort_values('DATE')
-    series = df[target_col]
+    if len(df) < 13:
+        raise ValueError("At least 13 rows needed to generate lag features.")
 
-    # Forecast the next step
-    forecast = model.forecast(steps=1)
-    return forecast[0]
+    recent_df = df.tail(13)
+    features_df = generate_features(recent_df)
+    X_latest = features_df.drop(columns=["LOAD"]).iloc[-1]
+    exog_df = pd.DataFrame([X_latest] * steps)
 
-
-def forecast_from_manual_input(model, input_data, steps=1):
-    """
-    Forecast using ARIMA model based on manual input.
-    Assumes manual LOAD value is provided, but ARIMA uses internal state.
-    """
-    last_load = input_data.get('LOAD', None)
-    if last_load is None:
-        raise ValueError("Manual input must include a 'LOAD' value.")
-
-    # Optionally, you could use last_load to override internal state or retrain ARIMA,
-    # but here we'll use existing model as-is to generate forecast.
-    forecast = model.forecast(steps=steps)
+    forecast = model.forecast(steps=steps, exog=exog_df)
     return forecast.tolist()
 
+def forecast_from_manual_input(model, manual_df, steps=1):
+    """
+    Accepts a DataFrame of 13 rows from user input to forecast future LOAD.
+    """
+    if manual_df.shape[0] < 13:
+        raise ValueError("Manual input must have at least 13 rows.")
 
-if __name__ == '__main__':
-    model = load_model('../arima_model.pkl')
-    df = load_and_clean_data('../data/combinedddddd_dataset.xlsx')
+    features_df = generate_features(manual_df)
+    X_latest = features_df.drop(columns=["LOAD"]).iloc[-1]
+    exog_df = pd.DataFrame([X_latest] * steps)
 
-    # Predict next step using dataset
-    prediction = predict_next(df, model)
-    print(f"Predicted next LOAD value: {prediction:.4f}")
+    forecast = model.forecast(steps=steps, exog=exog_df)
+    return forecast.tolist()
 
-    # Predict from manual input
-    manual_input = {'LOAD': df['LOAD'].iloc[-1]}  # example: last value
-    future = forecast_from_manual_input(model, manual_input, steps=3)
-    print("Forecast from manual input:", future)
