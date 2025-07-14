@@ -28,9 +28,6 @@ def forecast_next_steps(model, steps=1):
     return forecast.tolist()
 
 def forecast_from_manual_input(model, manual_df, steps=1):
-    """
-    Accepts a DataFrame of 13 rows from user input to forecast future LOAD.
-    """
     if manual_df.shape[0] < 13:
         raise ValueError("Manual input must have at least 13 rows.")
 

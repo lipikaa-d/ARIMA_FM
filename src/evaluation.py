@@ -6,7 +6,7 @@ from math import sqrt
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 from src.data_preprocessing import load_and_clean_data
-from app.utils import generate_features  # ✅ Import to create lag/rolling features
+from app.utils import generate_features  # Import to create lag/rolling features
 
 MODEL_PATH = 'models/sarimax_model.pkl'
 DATA_PATH = 'data/combinedddddd_dataset.xlsx'
@@ -69,7 +69,7 @@ def get_evaluation_metrics():
     }
 
 
-# Optional CLI usage
+# CLI usage
 if __name__ == '__main__':
     metrics = get_evaluation_metrics()
     print("Evaluation Metrics:")

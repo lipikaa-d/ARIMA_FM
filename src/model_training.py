@@ -15,13 +15,13 @@ from src.data_preprocessing import load_and_clean_data
 
 warnings.filterwarnings("ignore")
 
-# === Paths ===
+# Paths
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 DATA_PATH = os.path.join(BASE_DIR, "data", "combinedddddd_dataset.xlsx")
 MODEL_PATH = os.path.join(BASE_DIR, "models", "sarimax_model.pkl")
 
 
-# === Feature Engineering: Lag & Rolling Mean ===
+# Feature Engineering: Lag & Rolling Mean
 def add_lag_and_rolling(df, exog_cols, lag=1, window=3):
     for col in exog_cols:
         df[f"{col}_lag{lag}"] = df[col].shift(lag)
@@ -29,7 +29,7 @@ def add_lag_and_rolling(df, exog_cols, lag=1, window=3):
     return df
 
 
-# === Percentage Error Metrics ===
+#  Percentage Error Metrics
 def mean_absolute_percentage_error(y_true, y_pred):
     y_true, y_pred = np.array(y_true), np.array(y_pred)
     mask = y_true != 0
