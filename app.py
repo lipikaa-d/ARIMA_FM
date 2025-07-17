@@ -76,7 +76,7 @@ def index():
 
             except Exception as e:
 
-                print("Forecasting with latest data failed:", e)  # <--- Add this line
+                print("Forecasting with latest data failed:", e)  
 
                 return f"<h3>Error: {e}</h3><br><a href='/'>Go back</a>"
     return render_template('index.html', latest_inputs=latest_inputs)
